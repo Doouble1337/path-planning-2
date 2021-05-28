@@ -21,7 +21,9 @@ def on_change(x):
     print(lower_bound, upper_bound)
 
 def detect_obgect(image, lower_bound, upper_bound):
-    mask = cv2.inRange(image, lower_bound, upper_bound)
+    ret, mask = cv2.threshold(image[:,:,0], 0, 255, cv2.THRESH_OTSU)
+
+    #mask = cv2.inRange(image, lower_bound, upper_bound)
 
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
 
@@ -29,13 +31,14 @@ def detect_obgect(image, lower_bound, upper_bound):
     for stat in connect[2]:
         if stat[4] < 1000:
             # mask[stat[0]:stat[0]+stat[2], stat[1]:stat[1]+stat[3]] = [0, 0, 0]
-            cv2.rectangle(frame, (stat[0], stat[1]), (stat[0] + stat[2], stat[1] + stat[3]), (0, 255, 255), 1)
+            cv2.rectangle(image, (stat[0], stat[1]), (stat[0] + stat[2], stat[1] + stat[3]), (0, 255, 255), 1)
 
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(frame, contours, -1, (0, 255, 255), 3)
+    contours_image = np.zeros_like(image)
+    cv2.drawContours(contours_image, contours, -1, (255, 255, 255), 1)
+    cv2.drawContours(image, contours, -1, (0, 255, 255), 1)
 
-    cv2.imshow("frame", frame)
-    cv2.imshow("mask", mask)
+    return (contours_image, mask, image)
 
 
 
@@ -77,7 +80,11 @@ while (True):
     upper_bound[1] = cv2.getTrackbarPos('upper_green', 'sliders_frame')
     upper_bound[2] = cv2.getTrackbarPos('upper_blue', 'sliders_frame')
 
-    detect_obgect(frame, lower_bound, upper_bound)
+    contours_frame, mask, frame = detect_obgect(frame, lower_bound, upper_bound)
+
+    cv2.imshow("frame", frame)
+    cv2.imshow("mask", mask)
+    cv2.imshow("contours_frame", contours_frame)
 
     if (cv2.waitKey(1) & 0xFF == ord('q')):
         break

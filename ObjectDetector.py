@@ -33,7 +33,7 @@ def detect_obgect(image, lower_bound, upper_bound):
             # mask[stat[0]:stat[0]+stat[2], stat[1]:stat[1]+stat[3]] = [0, 0, 0]
             cv2.rectangle(image, (stat[0], stat[1]), (stat[0] + stat[2], stat[1] + stat[3]), (0, 255, 255), 1)
 
-    contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     contours_image = np.zeros_like(image)
     cv2.drawContours(contours_image, contours, -1, (255, 255, 255), 1)
     cv2.drawContours(image, contours, -1, (0, 255, 255), 1)

@@ -17,6 +17,30 @@ def get_available_cameras(upper_bound=10, lower_bound=0):
 
     return available
 
+def on_change(x):
+    print(lower_bound, upper_bound)
+
+def detect_obgect(image, lower_bound, upper_bound):
+    mask = cv2.inRange(image, lower_bound, upper_bound)
+
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+
+    connect = cv2.connectedComponentsWithStats(mask, 4, cv2.CV_32S)
+    for stat in connect[2]:
+        if stat[4] < 1000:
+            # mask[stat[0]:stat[0]+stat[2], stat[1]:stat[1]+stat[3]] = [0, 0, 0]
+            cv2.rectangle(frame, (stat[0], stat[1]), (stat[0] + stat[2], stat[1] + stat[3]), (0, 255, 255), 1)
+
+    contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(frame, contours, -1, (0, 255, 255), 3)
+
+    cv2.imshow("frame", frame)
+    cv2.imshow("mask", mask)
+
+
+
+
+
 
 get_available_cameras()
 
@@ -29,13 +53,6 @@ cv2.resizeWindow("frame", (960, 720))
 
 lower_bound = np.array([160, 100, 40])
 upper_bound = np.array([190, 130, 60])
-
-
-def on_change(x):
-    print(lower_bound, upper_bound)
-
-
-colors = []
 
 cv2.createTrackbar('lower_red', 'sliders_frame', 0, 255, on_change)
 cv2.createTrackbar('lower_green', 'sliders_frame', 115, 255, on_change)
@@ -60,21 +77,7 @@ while (True):
     upper_bound[1] = cv2.getTrackbarPos('upper_green', 'sliders_frame')
     upper_bound[2] = cv2.getTrackbarPos('upper_blue', 'sliders_frame')
 
-    mask = cv2.inRange(frame, lower_bound, upper_bound)
-
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
-
-    connect = cv2.connectedComponentsWithStats(mask, 4, cv2.CV_32S)
-    for stat in connect[2]:
-        if stat[4] < 1000:
-            #mask[stat[0]:stat[0]+stat[2], stat[1]:stat[1]+stat[3]] = [0, 0, 0]
-            cv2.rectangle(frame, (stat[0], stat[1]), (stat[0] + stat[2], stat[1] + stat[3]), (0, 255, 255), 1)
-
-    contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(frame, contours, -1, (0, 255, 255), 3)
-
-    cv2.imshow("frame", frame)
-    cv2.imshow("mask", mask)
+    detect_obgect(frame, lower_bound, upper_bound)
 
     if (cv2.waitKey(1) & 0xFF == ord('q')):
         break

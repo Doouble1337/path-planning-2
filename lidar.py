@@ -1,9 +1,12 @@
+import random
+
 import numpy as np
 from math import *
 import scipy as sc
 import scipy.optimize as opt
 
 lidarGeneratedData = []
+
 
 #lidarinput keeps distance to each point at each degree with step of 1 degree
 
@@ -68,16 +71,28 @@ def findIntersections():
     print(f'k is {k}')
     for i in range (360):
         j = -i + 90 #angle in normal coords
-        j = radians(j)
-        if (tan(j)!=k):
-            xIntersect = b/(tan(j)-k)
-            if twoPoints[4]<xIntersect<twoPoints[5]:
-                xIntersect = round(xIntersect, 2)
-                #intersectionsX.append([i,xIntersect])
-                intersectionsX.append([i,xIntersect])
-            else:
-                intersectionsX.append([i,'none'])
-                #intersectionsX.append([i,'none'])
+        if -90<=j<=90:
+            j = radians(j)
+            if (tan(j) != k):
+                xIntersect = b / (tan(j) - k)
+                if twoPoints[4] < xIntersect < twoPoints[5] and xIntersect>=0:
+                    xIntersect = round(xIntersect, 2)
+                    # intersectionsX.append([i,xIntersect])
+                    intersectionsX.append([i, xIntersect])
+                else:
+                    intersectionsX.append([i, 'none'])
+                    # intersectionsX.append([i,'none'])
+        if j< -90:
+            j = radians(j)
+            if (tan(j) != k):
+                xIntersect = b / (tan(j) - k)
+                if twoPoints[4] < xIntersect < twoPoints[5] and xIntersect < 0:
+                    xIntersect = round(xIntersect, 2)
+                    # intersectionsX.append([i,xIntersect])
+                    intersectionsX.append([i, xIntersect])
+                else:
+                    intersectionsX.append([i, 'none'])
+                    # intersectionsX.append([i,'none'])
     return intersectionsX
 
 intersectionsX = findIntersections()
@@ -91,7 +106,7 @@ print(len(intersectionsX))
 for unit in intersectionsX:
     alpha = unit[0]
     lengthX = unit[1]
-    if lengthX!='none':
+    if lengthX!='none' and sin(radians(alpha))!=0:
         lengthR = lengthX/sin(radians(alpha))
         lidarGeneratedData.append(round(lengthR,2))
     else:
@@ -99,3 +114,39 @@ for unit in intersectionsX:
 
 print('')
 print(f'lidarGeneratedData array: {lidarGeneratedData}')
+
+def generateNoise(lidarGeneratedData):
+    noisedData = np.array([])
+    for datum in lidarGeneratedData:
+        if datum=='none':
+            if np.random.uniform(0,100)<2:
+                datum = np.random.uniform(0,100)
+        else:
+            datum += np.random.uniform(0,0.2)
+        noisedData = np.append(noisedData, datum)
+    return noisedData
+
+noisedData  = generateNoise(lidarGeneratedData)
+
+
+print(f'noisedData is {noisedData}')
+
+"""
+THIS WAS THE INFORMATION GENERATION PART
+
+
+
+FROM NOW ON, DATA ANALYSIS IS BEING IMPLEMENTED
+"""
+def data2coords(data):
+    return True
+
+
+
+
+
+def process_data(data):   #data is an array of length with each degree
+    counter = 0
+    for data in data:
+        counter+=1
+    return True

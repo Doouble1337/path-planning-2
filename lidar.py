@@ -114,7 +114,6 @@ for unit in intersectionsX:
         lidarGeneratedData.append(None)
 
 print('')
-print(f'lidarGeneratedData array: {lidarGeneratedData}')
 
 def generateNoise(lidarGeneratedData):
     noisedData = np.array([])
@@ -148,8 +147,6 @@ def data2coords(dist):
 
     for i in range (len(dist)):
         if dist[i] is not None:
-            print(type(dist[i]), type(sin(radians(i))))
-            print(sin(radians(i)))
             xCoordinate = dist[i]*sin(radians(i))
             xS = np.append(xS, round(xCoordinate,3))
             yCoordinate = dist[i]*cos(radians(i))

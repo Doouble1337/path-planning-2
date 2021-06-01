@@ -23,20 +23,20 @@ def on_change(x):
 def detect_obgect(image, lower_bound, upper_bound):
     ret, mask = cv2.threshold(image[:,:,0], 0, 255, cv2.THRESH_OTSU)
 
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    #mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
 
-    connect = cv2.connectedComponentsWithStats(mask, 4, cv2.CV_32S)
-    for stat in connect[2]:
-        if stat[4] < 1000:
+    #connect = cv2.connectedComponentsWithStats(mask, 4, cv2.CV_32S)
+    #for stat in connect[2]:
+        #if stat[4] < 1000:
             # mask[stat[0]:stat[0]+stat[2], stat[1]:stat[1]+stat[3]] = [0, 0, 0]
-            cv2.rectangle(image, (stat[0], stat[1]), (stat[0] + stat[2], stat[1] + stat[3]), (0, 255, 255), 1)
+            #cv2.rectangle(image, (stat[0], stat[1]), (stat[0] + stat[2], stat[1] + stat[3]), (0, 255, 255), 1)
 
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     contours_image = np.zeros_like(image)
     cv2.drawContours(contours_image, contours, -1, (255, 255, 255), 1)
     cv2.drawContours(image, contours, -1, (0, 255, 255), 1)
 
-    return (contours_image, mask, image)
+    return (contours_image)
 
 
 
@@ -45,7 +45,7 @@ def detect_obgect(image, lower_bound, upper_bound):
 
 get_available_cameras()
 
-cam1 = cv2.VideoCapture(0)
+cam1 = cv2.VideoCapture(1)
 
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 cv2.namedWindow("sliders_frame", cv2.WINDOW_NORMAL)
@@ -68,7 +68,7 @@ while (True):
 
     cv2.waitKey(1)
 
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
+    #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
 
     lower_bound[0] = cv2.getTrackbarPos('lower_red', 'sliders_frame')
     lower_bound[1] = cv2.getTrackbarPos('lower_green', 'sliders_frame')
@@ -78,10 +78,9 @@ while (True):
     upper_bound[1] = cv2.getTrackbarPos('upper_green', 'sliders_frame')
     upper_bound[2] = cv2.getTrackbarPos('upper_blue', 'sliders_frame')
 
-    contours_frame, mask, frame = detect_obgect(frame, lower_bound, upper_bound)
+    contours_frame = detect_obgect(frame, lower_bound, upper_bound)
 
     cv2.imshow("frame", frame)
-    cv2.imshow("mask", mask)
     cv2.imshow("contours_frame", contours_frame)
 
     if (cv2.waitKey(1) & 0xFF == ord('q')):

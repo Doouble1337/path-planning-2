@@ -33,6 +33,7 @@ def generateLine():
 
 twoPoints = generateLine()
 print(f'twoPoints is {twoPoints}')
+print(f'limits are {twoPoints[5], twoPoints[6]}')
 #print(twoPoints)
 
 #def randFunc(x):
@@ -77,7 +78,7 @@ def findIntersections():
             if (tan(j) != k):
                 xIntersect = b / (tan(j) - k)
                 if twoPoints[4] < xIntersect < twoPoints[5] and xIntersect>=0:
-                    xIntersect = round(xIntersect, 2)
+                    xIntersect = xIntersect
                     # intersectionsX.append([i,xIntersect])
                     intersectionsX.append([i, xIntersect])
                 else:
@@ -88,7 +89,7 @@ def findIntersections():
             if (tan(j) != k):
                 xIntersect = b / (tan(j) - k)
                 if twoPoints[4] < xIntersect < twoPoints[5] and xIntersect < 0:
-                    xIntersect = round(xIntersect, 2)
+                    xIntersect = xIntersect
                     # intersectionsX.append([i,xIntersect])
                     intersectionsX.append([i, xIntersect])
                 else:
@@ -148,30 +149,70 @@ def data2coords(dist):
     for i in range (len(dist)):
         if dist[i] is not None:
             xCoordinate = dist[i]*sin(radians(i))
-            xS = np.append(xS, round(xCoordinate,3))
+            xS = np.append(xS, xCoordinate)
             yCoordinate = dist[i]*cos(radians(i))
-            yS = np.append(yS, round(yCoordinate,3))
+            yS = np.append(yS, yCoordinate)
     return  xS, yS
 
 
+def LinesSplit(inputData):
+    lines = []
+    lineNum = 0
+    inputData = np.append(inputData, inputData[0])
+    inputData = np.insert(inputData,0, inputData[-2])
+    flag = 1
+    for i in range(1, len(inputData)-1):
+        if inputData[i] is not None:
+            if inputData[i+1] is not None or inputData[i-1] is not None:
+                if flag == 1:
+                    lines.append([])
+                    flag = 0
+                lines[-1].append([inputData[i],i - 1])
+            else:
+                lineNum +=1
+                flag = 1
+    if lines[0][0][1] == 0 and lines[-1][-1][1] == 359:
+        for k in range(len(lines[0])):
+            lines[-1].append(lines[0][k])
+        lines.pop(0)
+
+    return lines
 
 
 
 
 def process_data(data):   #data is an array of length with each degree
-    xS = np.array([])
-    yS = np.array([])
+    lines = LinesSplit(data)
 
-    xS = np.append(xS, data2coords(data)[0])
-    yS = np.append(yS, data2coords(data)[1])
+    outData = []
 
-    xS = np.array(xS).reshape(-1, 1)
 
-    model = LinearRegression().fit(xS, yS)
+    for line in lines:
+        modelIntercepts = []
+        modelCoefs = []
+        xS = np.array([])
+        yS = np.array([])
+        lineNP = np.array(line)
+        xS = np.append(xS, data2coords(lineNP)[0])
+        yS = np.append(yS, data2coords(lineNP)[1])
 
-    print(f'intercept: {model.intercept_}')
-    print(f'slope: {model.coef_}')
+        xS = np.array(xS).reshape(-1, 1)
 
-    return model.intercept_, model.coef_
+        model = LinearRegression().fit(xS, yS)
+
+        print(f'intercept: {model.intercept_}')
+        modelIntercepts.append(model.intercept_)
+        print(f'slope: {model.coef_}')
+        modelCoefs.append(model.coef_[0])
+
+        xLowerLimit = xS[0][0]
+        xHigherLimit = xS[-1][0]
+
+        outData.append([modelIntercepts,modelCoefs, xLowerLimit, xHigherLimit])
+
+    print (f'modelIntercepts are {modelIntercepts}, modelCoefs are {modelCoefs}')
+    print('')
+    print(f'outData is {outData}')
+    return outData
 
 process_data(noisedData)

@@ -43,4 +43,10 @@ for col in range(col_count):
 for row in range(row_count):
     root.grid_rowconfigure(row, minsize=20)
 
+canvas = Canvas(root, height=400, width=700)
+image = Image.open("")
+photo = Image.PhotoImage(image)
+image = canvas.create_image(0, 0, anchor='nw', image=photo)
+canvas.grid(row=3,column=3)
+
 root.mainloop()

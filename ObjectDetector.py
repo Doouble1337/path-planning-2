@@ -23,8 +23,6 @@ def on_change(x):
 def detect_obgect(image, lower_bound, upper_bound):
     ret, mask = cv2.threshold(image[:,:,0], 0, 255, cv2.THRESH_OTSU)
 
-    #mask = cv2.inRange(image, lower_bound, upper_bound)
-
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
 
     connect = cv2.connectedComponentsWithStats(mask, 4, cv2.CV_32S)

@@ -94,4 +94,13 @@ photo2 = ImageTk.PhotoImage(resized2)
 image2 = canvas2.create_image(0, 0, anchor='nw', image=photo2)
 canvas2.grid(row=1, column=19, columnspan=6, rowspan=15)
 
+
+def click(event):
+    x = event.x
+    y = event.y
+    s = "{}x{}".format(x, y)
+
+
+root.bind('<Button-1>', click)
+
 root.mainloop()

@@ -35,7 +35,7 @@ class ObjectDetector:
         min_height = 1000000
         min_length = 1000000
         for stat in connect[2][1:]:
-            #if stat[4]>1000:
+            if stat[4]>1000:
                 if stat[0]+stat[2]>max_length:
                     max_length = stat[0]+stat[2]
                 if stat[1]<min_height:
@@ -72,8 +72,8 @@ cv2.namedWindow("sliders_frame", cv2.WINDOW_NORMAL)
 
 #cv2.resizeWindow("frame", (960, 720))
 
-lower_bound = np.array([160, 100, 40])
-upper_bound = np.array([190, 130, 60])
+lower_bound = np.array([0, 0, 0])
+upper_bound = np.array([0, 0, 0])
 
 cv2.createTrackbar('lower_red', 'sliders_frame', 170, 255, on_change)
 cv2.createTrackbar('lower_green', 'sliders_frame', 170, 255, on_change)

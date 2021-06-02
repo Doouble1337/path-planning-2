@@ -20,12 +20,12 @@ def on_change(x):
 
 class ObjectDetector:
 
-    def __init__(self, image):
-        self.image = image
 
-    def detect_object(self, lower, upper):
+
+    @staticmethod
+    def detect_object(image, lower, upper):
         blur_kernel = (30, 30)
-        blur = cv2.blur(self.image, blur_kernel)
+        blur = cv2.blur(image, blur_kernel)
 
         table_mask = cv2.inRange(blur, lower, upper)
 
@@ -50,13 +50,13 @@ class ObjectDetector:
         cv2.rectangle(table_mask, (min_length, min_height), (max_length, max_height), (255, 0, 0), 1)
 
 
-        ret, mask = cv2.threshold(self.image[min_height:max_height ,min_length:max_length, 0], 0, 255, cv2.THRESH_OTSU)
+        ret, mask = cv2.threshold(image[min_height:max_height ,min_length:max_length, 0], 0, 255, cv2.THRESH_OTSU)
 
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        contours_image = np.zeros_like(self.image)
+        contours_image = np.zeros_like(image)
         cv2.drawContours(contours_image, contours, -1, (255, 255, 255), 1)
 
-        return (contours_image, table_mask)
+        return (contours_image)
 
 
 
@@ -83,6 +83,8 @@ cv2.createTrackbar('upper_red', 'sliders_frame', 255, 255, on_change)
 cv2.createTrackbar('upper_green', 'sliders_frame', 255, 255, on_change)
 cv2.createTrackbar('upper_blue', 'sliders_frame', 255, 255, on_change)
 
+
+
 while (True):
     ret1, frame = cam1.read()
 
@@ -98,18 +100,9 @@ while (True):
     upper_bound[1] = cv2.getTrackbarPos('upper_green', 'sliders_frame')
     upper_bound[2] = cv2.getTrackbarPos('upper_blue', 'sliders_frame')
 
-    #frame = cv2.resize(frame, (500, 350))
+    contours_frame = ObjectDetector.detect_object(frame, lower_bound, upper_bound)
 
-    detector = ObjectDetector(frame)
-    contours_frame, blurred_frame = detector.detect_object(lower_bound, upper_bound)
-
-
-    #contours_frame = cv2.cvtColor(contours_frame, cv2.COLOR_GRAY2RGB)
-    #blurred_frame = cv2.cvtColor(blurred_frame, cv2.COLOR_GRAY2RGB)
-
-    #cv2.imshow("output", np.concatenate((np.concatenate((frame, blurred_frame), axis = 1), np.concatenate((contours_frame, contours_frame), axis = 1))))
     cv2.imshow("frame", frame)
-    cv2.imshow("blur", blurred_frame)
     cv2.imshow("contours", contours_frame)
 
 

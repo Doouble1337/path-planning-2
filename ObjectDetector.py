@@ -20,8 +20,6 @@ def on_change(x):
 
 class ObjectDetector:
 
-
-
     @staticmethod
     def detect_object(image, lower, upper):
         blur_kernel = (30, 30)
@@ -30,27 +28,25 @@ class ObjectDetector:
         table_mask = cv2.inRange(blur, lower, upper)
 
         connect = cv2.connectedComponentsWithStats(table_mask, 4, cv2.CV_32S)
-        max_length = 0
-        max_height = 0
-        min_height = 1000000
-        min_length = 1000000
+        right_side = 0
+        down_side = 0
+        upper_side = 1000000
+        left_side = 1000000
         for stat in connect[2][1:]:
             if stat[4]>1000:
-                if stat[0]+stat[2]>max_length:
-                    max_length = stat[0]+stat[2]
-                if stat[1]<min_height:
-                    min_height = stat[1]
-                if stat[0]<min_length:
+                if stat[0]+stat[2]>right_side:
+                    right_side = stat[0]+stat[2]
+                if stat[1]<upper_side:
+                    upper_side = stat[1]
+                if stat[0]<left_side:
                     min_length = stat[0]
-                if stat[1]+stat[3] > max_height:
-                    max_height=stat[1]+stat[3]
-                print(min_length, max_length, min_height, max_height)
+                if stat[1]+stat[3] > down_side:
+                    down_side=stat[1]+stat[3]
 
-        table_mask = cv2.cvtColor(table_mask, cv2.COLOR_GRAY2RGB)
-        cv2.rectangle(table_mask, (min_length, min_height), (max_length, max_height), (255, 0, 0), 1)
+        #table_mask = cv2.cvtColor(table_mask, cv2.COLOR_GRAY2RGB)
+        #cv2.rectangle(table_mask, (left_side, upper_side), (right_side, down_side), (255, 0, 0), 1)
 
-
-        ret, mask = cv2.threshold(image[min_height:max_height ,min_length:max_length, 0], 0, 255, cv2.THRESH_OTSU)
+        ret, mask = cv2.threshold(image[upper_side:down_side ,left_side:right_side, 0], 0, 255, cv2.THRESH_OTSU)
 
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         contours_image = np.zeros_like(image)
@@ -69,8 +65,6 @@ cam1 = cv2.VideoCapture(1)
 
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 cv2.namedWindow("sliders_frame", cv2.WINDOW_NORMAL)
-
-#cv2.resizeWindow("frame", (960, 720))
 
 lower_bound = np.array([0, 0, 0])
 upper_bound = np.array([0, 0, 0])

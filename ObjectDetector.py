@@ -75,9 +75,9 @@ cv2.namedWindow("sliders_frame", cv2.WINDOW_NORMAL)
 lower_bound = np.array([160, 100, 40])
 upper_bound = np.array([190, 130, 60])
 
-cv2.createTrackbar('lower_red', 'sliders_frame', 0, 255, on_change)
-cv2.createTrackbar('lower_green', 'sliders_frame', 0, 255, on_change)
-cv2.createTrackbar('lower_blue', 'sliders_frame', 0, 255, on_change)
+cv2.createTrackbar('lower_red', 'sliders_frame', 170, 255, on_change)
+cv2.createTrackbar('lower_green', 'sliders_frame', 170, 255, on_change)
+cv2.createTrackbar('lower_blue', 'sliders_frame', 170, 255, on_change)
 
 cv2.createTrackbar('upper_red', 'sliders_frame', 255, 255, on_change)
 cv2.createTrackbar('upper_green', 'sliders_frame', 255, 255, on_change)

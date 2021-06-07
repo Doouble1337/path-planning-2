@@ -2,14 +2,25 @@ import random
 
 import numpy as np
 from math import *
+import cv2
+import matplotlib.pyplot as plt
 import scipy as sc
 import scipy.optimize as opt
 from sklearn.linear_model import LinearRegression
 
 lidarGeneratedData = []
-
+pic = cv2.imread("whiteboard.png")
 
 #lidarinput keeps distance to each point at each degree with step of 1 degree
+def drawData(coordsArray):
+    for i in range(len(coordsArray)):
+        print('')
+        #print("coordsArray for drawing is " +str(coordsArray))
+        #print(coordsArray[i][0][0],coordsArray[i][1][0])
+        #cv2.circle(pic, (int(coordsArray[i][0][0]*1000),int(coordsArray[i][1][0]*1000)), 3, (255,0,0), -1)
+    #cv2.imshow("frame" , pic)
+    #cv2.imwrite("result.png", pic)
+
 
 def generateLine():
     print('generated random line')
@@ -101,8 +112,8 @@ intersectionsX = findIntersections()
 
 #pointx = [3]
 #print(f"Func value in point {pointx} is: {randFunc(pointx)}")
-print('')
-print(f'Intersection points of lidar with obstacles are: {intersectionsX}')
+#print('')
+#print(f'Intersection points of lidar with obstacles are: {intersectionsX}')
 print(len(intersectionsX))
 
 for unit in intersectionsX:
@@ -120,8 +131,8 @@ def generateNoise(lidarGeneratedData):
     noisedData = np.array([])
     for datum in lidarGeneratedData:
         if datum is None:
-            if np.random.uniform(0,100)<2:
-                datum = np.random.uniform(0,100)
+            if np.random.uniform(0,100)<0.5:
+                datum = np.random.uniform(0,20)
         else:
             datum += np.random.uniform(0,0.2)
         noisedData = np.append(noisedData, datum)
@@ -145,36 +156,84 @@ def data2coords(dist):
     xS = np.array([])
     yS = np.array([])
     c = 0
+    #print('')
+    #print(f'dist in data2coords is {dist}')
 
     for i in range (len(dist)):
         if dist[i] is not None:
+            #print(f'dist[i] is {dist[i]}')
             xCoordinate = dist[i]*sin(radians(i))
             xS = np.append(xS, xCoordinate)
+            #print(f'appended {xCoordinate} to xS: {xS}')
             yCoordinate = dist[i]*cos(radians(i))
             yS = np.append(yS, yCoordinate)
+            overall.append([xCoordinate, yCoordinate])
     return  xS, yS
+    #return overall
+
+def data2coords4line (line):
+    xS = np.array([])
+    yS = np.array([])
+    c = 0
+    # print('')
+    # print(f'dist in data2coords is {dist}')
+
+    for point in line:
+        xCoordinate = point[0] * sin(radians(point[1]))
+        xS = np.append(xS, xCoordinate)
+        # print(f'appended {xCoordinate} to xS: {xS}')
+        yCoordinate = point[0] * cos(radians(point[1]))
+        yS = np.append(yS, yCoordinate)
+    return xS, yS
+
+def data2coordsov(dist):
+    overall = []
+    xS = np.array([])
+    yS = np.array([])
+    c = 0
+    #print('')
+    #print(f'dist in data2coords is {dist}')
+
+    for i in range (len(dist)):
+        if dist[i] is not None:
+            #print(f'dist[i] is {dist[i]}')
+            xCoordinate = dist[i]*sin(radians(i))
+            xS = np.append(xS, xCoordinate)
+            #print(f'appended {xCoordinate} to xS: {xS}')
+            yCoordinate = dist[i]*cos(radians(i))
+            yS = np.append(yS, yCoordinate)
+            overall.append([xCoordinate, yCoordinate])
+    #return  xS, yS
+    return overall
 
 
 def LinesSplit(inputData):
     lines = []
+    linesWithoutAngle = []
     lineNum = 0
     inputData = np.append(inputData, inputData[0])
     inputData = np.insert(inputData,0, inputData[-2])
+
+    #print(f'inputData in linessplit is {inputData} after appending and inserting 2 basics')
     flag = 1
     for i in range(1, len(inputData)-1):
         if inputData[i] is not None:
             if inputData[i+1] is not None or inputData[i-1] is not None:
                 if flag == 1:
                     lines.append([])
+                    linesWithoutAngle.append([])
                     flag = 0
                 lines[-1].append([inputData[i],i - 1])
+                linesWithoutAngle[-1].append([inputData[i]])
+                #print(f'appended {[inputData[i],i - 1]} to lines in linessplit')
+                #print(f'now lines are {lines}')
             else:
                 lineNum +=1
                 flag = 1
-    if lines[0][0][1] == 0 and lines[-1][-1][1] == 359:
-        for k in range(len(lines[0])):
-            lines[-1].append(lines[0][k])
-        lines.pop(0)
+    #if lines[0][0][1] == 0 and lines[-1][-1][1] == 359:
+    #    for k in range(len(lines[0])):
+    #        lines[-1].append(lines[0][k])
+    #    lines.pop(0)
 
     return lines
 
@@ -182,37 +241,60 @@ def LinesSplit(inputData):
 
 
 def process_data(data):   #data is an array of length with each degree
-    lines = LinesSplit(data)
+    lines = LinesSplit(data) #lines are arrays in array thet give radius and angle
+    print(f'data is {data}')
 
     outData = []
 
 
     for line in lines:
+        print(f'line is: {line}')
         modelIntercepts = []
         modelCoefs = []
-        xS = np.array([])
-        yS = np.array([])
-        lineNP = np.array(line)
-        xS = np.append(xS, data2coords(lineNP)[0])
-        yS = np.append(yS, data2coords(lineNP)[1])
 
-        xS = np.array(xS).reshape(-1, 1)
+        X, Y = data2coords4line(line)
+        #xS = np.array([])
+        yS = Y
+        xS = X.reshape(-1,1)
+        #yS = np.array([])
+        #lineNP = np.array(line)
+        #drawData(data2coordsov(lineNP))
+        #print(f'lineNP is given to data2coords as data. Its value is {lineNP}')
+        #xS = np.append(xS, data2coords(lineNP)[0])
+        #print(f'xS = {xS}')
+        #print(f'xS length is {len(xS)}')
+        #yS = np.append(yS, data2coords(lineNP)[1])
+        #xS = np.array(xS).reshape(-1, 1)
 
         model = LinearRegression().fit(xS, yS)
 
-        print(f'intercept: {model.intercept_}')
+        #print(f'intercept: {model.intercept_}')
         modelIntercepts.append(model.intercept_)
-        print(f'slope: {model.coef_}')
+        #print(f'slope: {model.coef_}')
         modelCoefs.append(model.coef_[0])
 
-        xLowerLimit = xS[0][0]
-        xHigherLimit = xS[-1][0]
-
+        #print(xS)
+        xSSorted = np.sort(xS, axis = 0)
+        print(f'xSorted are {xSSorted}')
+        xLowerLimit = xSSorted[-1][0]
+        xHigherLimit = xSSorted[0][0]
         outData.append([modelIntercepts,modelCoefs, xLowerLimit, xHigherLimit])
 
-    print (f'modelIntercepts are {modelIntercepts}, modelCoefs are {modelCoefs}')
-    print('')
+    #print (f'modelIntercepts are {modelIntercepts}, modelCoefs are {modelCoefs}')
+    #print('')
     print(f'outData is {outData}')
     return outData
 
+
+def displayPoints(dataset):
+    X, Y = data2coords(dataset)
+    plt.scatter(X, Y)
+    print(X)
+    #print(X,Y, sep = "\n" )
+    datanp = np.array(dataset)
+    plt.scatter(datanp, range(360))
+    plt.scatter(0,0)
+    plt.show()
+
+displayPoints(noisedData)
 process_data(noisedData)

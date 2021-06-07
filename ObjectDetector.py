@@ -52,7 +52,7 @@ class ObjectDetector:
         contours_image = np.zeros_like(image)
         cv2.drawContours(contours_image, contours, -1, (255, 255, 255), 1)
 
-        return (contours_image)
+        return (contours_image, table_mask)
 
 
 
@@ -61,7 +61,7 @@ class ObjectDetector:
 
 get_available_cameras()
 
-cam1 = cv2.VideoCapture(1)
+cam1 = cv2.VideoCapture(0)
 
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 cv2.namedWindow("sliders_frame", cv2.WINDOW_NORMAL)
@@ -94,9 +94,10 @@ while (True):
     upper_bound[1] = cv2.getTrackbarPos('upper_green', 'sliders_frame')
     upper_bound[2] = cv2.getTrackbarPos('upper_blue', 'sliders_frame')
 
-    contours_frame = ObjectDetector.detect_object(frame, lower_bound, upper_bound)
+    contours_frame, surface = ObjectDetector.detect_object(frame, lower_bound, upper_bound)
 
     cv2.imshow("frame", frame)
+    cv2.imshow("surface", surface)
     cv2.imshow("contours", contours_frame)
 
 

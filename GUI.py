@@ -6,8 +6,13 @@ root = Tk()
 
 root.geometry('1170x700')
 
-
 scale_list = [0, 0, 0, 0, 0, 0, 0, 0]
+
+
+def open_calib():
+    calib = Toplevel(root)
+    calib.title('Окно калибровки')
+    calib.geometry("200x200")
 
 
 def func_cac(i):
@@ -77,24 +82,12 @@ scale5.Scale.grid(row=8, column=0, columnspan=4)
 scale6 = MyScale(root, "upper_blue", func6, '#73B5FA')
 scale6.Scale.grid(row=10, column=0, columnspan=4)
 
-rainbow_colors = ['#FF7F50', 'purple', 'yellow', 'orange', 'blue',
-                  'lightblue', 'green', 'black']
-color_iterator = iter(rainbow_colors)
-
-
-def button_update():
-    try:
-        color = next(color_iterator)
-        but_sub.config(bg=color)
-    except:
-        return
-    root.after(500, button_update)
-
-
-button_update()
-
 but_sub = Button(root, text='Submit')
-but_sub.grid(row=15, column=17)
+but_sub.grid(row=15, column=18)
+
+
+but_calib = Button(root, text='Calibration', command=open_calib)
+but_calib.grid(row=15, column=19)
 
 list_label = Label(root, text="Some label")
 list_label.grid(row=13, column=1)
@@ -137,25 +130,7 @@ def click(event):
 
 root.bind('<Button-1>', click)
 
-photo = PhotoImage(file=r'D:\popug\popug.gif')
-gif_index = 0
-
-
-def next_frame():
-    global gif_index
-    try:
-        # XXX: Move to the next frame
-        photo.configure(format="gif -index {}".format(gif_index))
-        gif_index += 1
-    except TclError:
-        gif_index = 0
-        return next_frame()
-    else:
-        root.after(100, next_frame)  # XXX: Fixed animation speed
-
-
-label = Label(root, image=photo)
-label.grid(row=11, column=0, columnspan=6, rowspan=15)
-root.after_idle(next_frame)
-
 root.mainloop()
+
+# отдельное окно - картинка, кнопка старта и завершения калибровки
+# кнопка калибровки - главное окно

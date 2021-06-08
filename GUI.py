@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 import tkinter as tk
 
+
 class MyScale:
     def __init__(self, root, label_name, func_name, color):
         self.Scale = Scale(root, orient=HORIZONTAL,
@@ -13,10 +14,14 @@ class MyScale:
                            command=lambda i: func_name(i))
 
 
-
 class GUI:
     def __init__(self, root):
-        print("creating")
+
+        self.col_count, self.row_count = root.grid_size()
+        for col in range(self.col_count):
+            root.grid_columnconfigure(col, minsize=20)
+        for row in range(self.row_count):
+            root.grid_rowconfigure(row, minsize=20)
 
         self.scale_list = [0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -129,12 +134,6 @@ class GUI:
 
 root = Tk()
 root.geometry('1170x700')
-
-col_count, row_count = root.grid_size()
-for col in range(col_count):
-    root.grid_columnconfigure(col, minsize=20)
-for row in range(row_count):
-    root.grid_rowconfigure(row, minsize=20)
 
 gui = GUI(root)
 

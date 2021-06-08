@@ -44,9 +44,6 @@ class ObjectDetector:
                 if stat[1]+stat[3] > down_side:
                     down_side=stat[1]+stat[3]
 
-        #table_mask = cv2.cvtColor(table_mask, cv2.COLOR_GRAY2RGB)
-        #cv2.rectangle(table_mask, (left_side, upper_side), (right_side, down_side), (255, 0, 0), 1)
-
         ret, mask = cv2.threshold(image[upper_side:down_side ,left_side:right_side, 0], 0, 255, cv2.THRESH_OTSU)
 
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)

@@ -65,7 +65,7 @@ class ObjectDetector:
         cv2.drawContours(contours_image, contours, -1, (255, 255, 255), 1)
         cv2.drawContours(contours_image, hull, -1, (255, 255, 255), 1)
 
-        return (contours_image, table_mask)
+        return (contours_image, table_mask, hull)
 
 
 
@@ -107,11 +107,13 @@ while (True):
     upper_bound[1] = cv2.getTrackbarPos('upper_green', 'sliders_frame')
     upper_bound[2] = cv2.getTrackbarPos('upper_blue', 'sliders_frame')
 
-    contours_frame, surface = ObjectDetector.detect_object(frame, lower_bound, upper_bound, 0.05)
+    contours_frame, surface, contours_array = ObjectDetector.detect_object(frame, lower_bound, upper_bound, 0.01)
 
     cv2.imshow("frame", frame)
     cv2.imshow("surface", surface)
     cv2.imshow("contours", contours_frame)
+    for contour in contours_array:
+        print(contour, end = ' end')
 
 
     if (cv2.waitKey(1) & 0xFF == ord('q')):

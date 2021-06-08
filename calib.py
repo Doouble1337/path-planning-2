@@ -35,7 +35,7 @@ cv.destroyAllWindows()
 # and corresponding pixel coordinates of the detected corners (imgpoints)
 
 ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-np.savez('../pythonProject2/calib.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
+np.savez('../path-planning/calib.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
 # mtx = Intrinsic camera matrix
 # dist = Lens distortion coefficients
 # rvecs = Rotation specified as a 3×1 vector. The direction of the vector specifies the axis of rotation

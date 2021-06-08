@@ -40,4 +40,4 @@ np.savez('../path-planning/calib.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tv
 # dist = Lens distortion coefficients
 # rvecs = Rotation specified as a 3×1 vector. The direction of the vector specifies the axis of rotation
 # and the magnitude of the vector specifies the angle of rotation
-# tvecs = 3×1 Translation vector
+# tvecs = 3×1 Translation vectors

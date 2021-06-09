@@ -11,7 +11,7 @@ cam1 = cv2.VideoCapture('123.mov')
 
 lower_bound = np.array([0, 0, 0])
 upper_bound = np.array([230, 225, 215])
-detalization = 10
+detalization = 20
 approximation_coef = 0.0
 morphology_coef = 15
 
@@ -61,9 +61,13 @@ while(True):
     mp = np.zeros(frame.shape, np.uint8)
 
     try:
-        path, mp = graph.search_path_dijkstra([p1[0], p1[1], 1], [p2[0], p2[1], 1])
+        t1 = time.time()
+        path, mp = graph.astar([p1[1], p1[0]], [p2[1], p2[0]])
+        print(time.time() - t1)
     except:
         print("no path")
+
+    #print(path)
 
     map = cv2.cvtColor(map, cv2.COLOR_GRAY2RGB)
 

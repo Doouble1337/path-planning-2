@@ -53,9 +53,7 @@ class ObjectDetector:
 
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)
 
-        hull = []
-        for i in range(len(contours)):
-            hull.append(cv2.convexHull(contours[i], False))
+        hull = contours
 
         for i in range(len(hull)):
             epsilon = approximation_coefficient * cv2.arcLength(hull[i], True)

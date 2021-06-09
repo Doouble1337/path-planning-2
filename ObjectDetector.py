@@ -21,7 +21,8 @@ def on_change(x):
 class ObjectDetector:
 
     @staticmethod
-    def detect_object(image, bounds, approximation_coefficient):
+    def detect_object(image, bounds, approximation_coefficient, morphology_coefficient):
+        #print(approximation_coefficient)
         lower, upper = bounds
         blur_kernel = (30, 30)
         blur = cv2.blur(image, blur_kernel)
@@ -44,13 +45,15 @@ class ObjectDetector:
                 if stat[1]+stat[3] > down_side:
                     down_side=stat[1]+stat[3]
 
-        ret, mask = cv2.threshold(image[upper_side:down_side ,left_side:right_side, 0], 0, 255, cv2.THRESH_OTSU)
+        morph = cv2.morphologyEx(image, cv2.MORPH_OPEN, np.ones((morphology_coefficient, morphology_coefficient), np.uint8), iterations=1)
 
-        contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_KCOS)
+        ret, mask = cv2.threshold(morph[upper_side:down_side ,left_side:right_side, 0], 0, 255, cv2.THRESH_OTSU)
 
-        hull = []
-        for i in range(len(contours)):
-            hull.append(cv2.convexHull(contours[i], False))
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+        hull = contours
+        #for i in range(len(contours)):
+        #    hull.append(cv2.convexHull(contours[i], False))
 
 
         for i in range(len(hull)):

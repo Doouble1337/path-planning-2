@@ -1,31 +1,50 @@
 from tkinter import *
 from PIL import Image, ImageTk
 import tkinter as tk
+from enum import IntEnum
 
 
 class MyScale:
-    def __init__(self, root, label_name, func_name, color):
+    def __init__(self, root, index, label_name, callback, color):
         self.Scale = Scale(root, orient=HORIZONTAL,
                            length=250,
                            label=label_name,
                            from_=0,
-                           to=255,
+                           to=100,
                            troughcolor=color,
-                           command=lambda i: func_name(i))
+                           command=lambda value: callback(index, int(value) / 100))
 
+
+class Param(IntEnum):
+    LOWER_RED = 0,
+    LOWER_GREEN = 1,
+    LOWER_BLUE = 2,
+
+    UPPER_RED = 3,
+    UPPER_GREEN = 4,
+    UPPER_BLUE = 5,
+
+    DETALIZATION = 6,
+
+    APPROXIMATION_COEF = 7,
+    MORPHOLOGY_COEF = 8
 
 class GUI:
-    def __init__(self, root):
 
-        self.col_count, self.row_count = root.grid_size()
+
+    def __init__(self, on_param_change):
+        self.root = Tk()
+        self.root.geometry('1170x700')
+
+        self.params = [0]*8
+
+        self.col_count, self.row_count = self.root.grid_size()
         for col in range(self.col_count):
-            root.grid_columnconfigure(col, minsize=20)
+            self.root.grid_columnconfigure(col, minsize=20)
         for row in range(self.row_count):
-            root.grid_rowconfigure(row, minsize=20)
+            self.root.grid_rowconfigure(row, minsize=20)
 
-        self.scale_list = [0, 0, 0, 0, 0, 0, 0, 0]
-
-        self.Lb = Listbox(root, height=3)
+        self.Lb = Listbox(self.root, height=3)
         self.Lb.grid(row=14, column=0, columnspan=4)
         self.Lb.insert(1, "1")
         self.Lb.insert(2, "2")
@@ -34,59 +53,53 @@ class GUI:
         self.Lb.insert(5, "5")
         self.Lb.insert(6, "6")
 
-        self.canvas1 = Canvas(root, height=400, width=400)
-        self.image1 = Image.open("D:\Image_test\Test_image.jpg")
-        self.resized1 = self.image1.resize((400, 400))
-        self.photo1 = ImageTk.PhotoImage(self.resized1)
-        self.canvas1.create_image(0, 0, anchor='nw', image=self.photo1)
-        self.canvas1.grid(row=1, column=6, columnspan=6, rowspan=15)
+        self.img_sz = (800, 600)
+        self.canvas = Canvas(self.root, width=self.img_sz[0], height = self.img_sz[1])
+        self.image = Image.open("test.png")
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.image_on_canvas = self.canvas.create_image(0, 0, anchor='nw', image=self.photo)
+        self.canvas.grid(row=1, column=6, columnspan=6, rowspan=15)
 
-        self.canvas2 = Canvas(root, height=400, width=400)
-        self.image2 = Image.open("D:\Image_test\Test_image2.jpg")
-        self.resized2 = self.image2.resize((400, 400))
-        self.photo2 = ImageTk.PhotoImage(self.resized2)
-        self.canvas2.create_image(0, 0, anchor='nw', image=self.photo2)
-        self.canvas2.grid(row=1, column=14, columnspan=6, rowspan=15)
+        self.det = MyScale(self.root, Param.DETALIZATION, "detalization", on_param_change, '#555555')
+        self.det.Scale.grid(row=0, column=6, columnspan=1)
 
-        self.image = Image.open("D:\popug\chel.jpg")
-        self.resized = self.image.resize((400, 400))
-        self.photo = ImageTk.PhotoImage(self.resized)
+        self.morph = MyScale(self.root, Param.MORPHOLOGY_COEF, "morphology coefficient", on_param_change, '#555555')
+        self.morph.Scale.grid(row=0, column=8, columnspan=1)
 
-        self.det = MyScale(root, "determine", self.func_det, '#F5E912')
-        self.det.Scale.grid(row=0, column=6, columnspan=4)
+        self.cac = MyScale(self.root, Param.APPROXIMATION_COEF, "contours approximation coefficient", on_param_change, '#555555')
+        self.cac.Scale.grid(row=0, column=7, columnspan=1)
 
-        self.cac = MyScale(root, "contours approximation coefficient", self.func_cac, '#ff00ff')
-        self.cac.Scale.grid(row=0, column=11, columnspan=6)
-
-        self.scale1 = MyScale(root, "lower_red", self.func1, '#FF4A4A')
+        self.scale1 = MyScale(self.root, Param.LOWER_RED, "lower_red", on_param_change, '#FF4A4A')
         self.scale1.Scale.grid(row=0, column=0, columnspan=4)
 
-        self.scale2 = MyScale(root, "lower_green", self.func2, '#21FF77')
+        self.scale2 = MyScale(self.root, Param.LOWER_GREEN, "lower_green", on_param_change, '#21FF77')
         self.scale2.Scale.grid(row=2, column=0, columnspan=4)
 
-        self.scale3 = MyScale(root, "lower_blue", self.func3, '#73B5FA')
+        self.scale3 = MyScale(self.root, Param.LOWER_BLUE, "lower_blue", on_param_change, '#73B5FA')
         self.scale3.Scale.grid(row=4, column=0, columnspan=4)
 
-        self.scale4 = MyScale(root, "upper_red", self.func4, '#FF4A4A')
+        self.scale4 = MyScale(self.root, Param.UPPER_RED, "upper_red", on_param_change, '#FF4A4A')
         self.scale4.Scale.grid(row=6, column=0, columnspan=4)
 
-        self.scale5 = MyScale(root, "upper_green", self.func5, '#21FF77')
+        self.scale5 = MyScale(self.root, Param.UPPER_GREEN, "upper_green", on_param_change, '#21FF77')
         self.scale5.Scale.grid(row=8, column=0, columnspan=4)
 
-        self.scale6 = MyScale(root, "upper_blue", self.func6, '#73B5FA')
+        self.scale6 = MyScale(self.root, Param.UPPER_BLUE, "upper_blue", on_param_change, '#73B5FA')
         self.scale6.Scale.grid(row=10, column=0, columnspan=4)
 
-        self.but_sub = Button(root, text='Submit')
-        self.but_sub.grid(row=15, column=18)
+        self.but_sub = Button(self.root, text='Submit', command = self.submit)
+        self.but_sub.grid(row=17, column=6)
 
-        self.but_calib = Button(root, text='Calibration', command=self.open_calib)
-        self.but_calib.grid(row=15, column=19)
+        self.but_calib = Button(self.root, text='Calibration', command=self.open_calib)
+        self.but_calib.grid(row=17, column=7)
 
-        self.list_label = Label(root, text="Some label")
+        self.list_label = Label(self.root, text="Some label")
         self.list_label.grid(row=13, column=1)
 
+        self.root.bind('<Button-1>', self.click)
+
     def open_calib(self):
-        self.calib = Toplevel(root)
+        self.calib = Toplevel(self.root)
         self.calib.title('Окно калибровки')
         self.calib.geometry("800x800")
 
@@ -103,40 +116,16 @@ class GUI:
         self.but_stop = Button(self.calib, text='Stop calibration')
         self.but_stop.grid(row=7, column=2, rowspan=3, columnspan=4)
 
-    def func_cac(self, i):
-        self.scale_list[7] = i
-
-    def func_det(self, i):
-        self.scale_list[6] = i
-
-    def func1(self, i):
-        self.scale_list[0] = i
-
-    def func2(self, i):
-        self.scale_list[1] = i
-
-    def func3(self, i):
-        self.scale_list[2] = i
-
-    def func4(self, i):
-        self.scale_list[3] = i
-
-    def func5(self, i):
-        self.scale_list[4] = i
-
-    def func6(self, i):
-        self.scale_list[5] = i
+    def submit(self):
+        print("hello")
 
     def click(self, event):
-        x = event.x
-        y = event.y
+        self.x1 = event.x
+        self.y1 = event.y
 
-
-root = Tk()
-root.geometry('1170x700')
-
-gui = GUI(root)
-
-root.bind('<Button-1>', gui.click)
-
-root.mainloop()
+    def set_image(self, image):
+        self.image = Image.fromarray(image)
+        scale = min(self.img_sz[0] / self.image.size[0], self.img_sz[1] / self.image.size[1])
+        self.image = self.image.resize((int(self.image.size[0]*scale), int(self.image.size[1]*scale)))
+        self.photo = ImageTk.PhotoImage(self.image)
+        self.canvas.itemconfig(self.image_on_canvas, image=self.photo)

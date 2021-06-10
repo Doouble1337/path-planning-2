@@ -83,6 +83,7 @@ class Graph:
         # нормирование весов
         for i in range(len(weights)):
             weights[i] = int(weights[i] * speed * 100)
+        weights = [1, 1]
         # создание графа; в формате h-w-s, где h обозначает строк w - столбец, а s - направление
         height, width = height // cell_sz, width // cell_sz
         nodes = []
@@ -169,8 +170,9 @@ class Graph:
 
         # Adding a stop condition
         outer_iterations = 0
-        max_iterations = 2500#len(maze) * len(maze[0]) // 2
-
+        max_iterations = len(maze) * len(maze[0]) // 2
+        max_iterations = 5000
+        print(max_iterations)
         # what squares do we search
         adjacent_squares = ((0, -1), (0, 1), (-1, 0), (1, 0),)
         if allow_diagonal_movement:
@@ -253,7 +255,7 @@ class Graph:
             B = [int(path[i][1]) * cell_sz + cell_sz // 2, int(path[i][0]) * cell_sz + cell_sz // 2]
             # print(A, B)
             if A != B:
-                cv2.line(map, A, B, (0, 255, 0), 1)
+                cv2.line(map, A, B, (0, 255, 0), 3)
                 #print(A, B)
         for i in range(len(mask)):
             for j in range(len(mask[i])):

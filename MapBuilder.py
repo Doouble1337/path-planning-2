@@ -132,3 +132,17 @@ class MapBuilder:
         y = int(y)
 
         return np.array([x, y])
+
+    def getPointBack(self, point, height = 0):
+        if(self.rmat is None):
+            return None
+
+        x = (float(point[0]) / self.scale) + self.st[0]
+        y = (float(point[1]) / self.scale) + self.st[1]
+
+        realp = np.array([[x], [y], [height]])
+
+        res = np.matmul(self.camera_matrix, (np.matmul(self.rmat, realp) + self.tvec))
+        res /= res[2]
+
+        return np.array([int(res[0]), int(res[1])])

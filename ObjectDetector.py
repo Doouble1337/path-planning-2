@@ -22,12 +22,12 @@ class ObjectDetector:
 
     @staticmethod
     def detect_object(image, bounds, approximation_coefficient, morphology_coefficient):
+        morph = cv2.morphologyEx(image, cv2.MORPH_OPEN, np.ones((morphology_coefficient, morphology_coefficient), np.uint8), iterations=1)
+
+
         #print(approximation_coefficient)
         lower, upper = bounds
-        blur_kernel = (30, 30)
-        blur = cv2.blur(image, blur_kernel)
-
-        table_mask = cv2.inRange(blur, lower, upper)
+        table_mask = cv2.inRange(morph, lower, upper)
 
         connect = cv2.connectedComponentsWithStats(table_mask, 4, cv2.CV_32S)
         right_side = 0
@@ -45,7 +45,6 @@ class ObjectDetector:
                 if stat[1]+stat[3] > down_side:
                     down_side=stat[1]+stat[3]
 
-        morph = cv2.morphologyEx(image, cv2.MORPH_OPEN, np.ones((morphology_coefficient, morphology_coefficient), np.uint8), iterations=1)
 
         ret, mask = cv2.threshold(morph[upper_side:down_side ,left_side:right_side, 0], 0, 255, cv2.THRESH_OTSU)
 

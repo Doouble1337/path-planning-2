@@ -7,13 +7,13 @@ from tkinter import *
 import time
 from graphs import Graph
 
-cam1 = cv2.VideoCapture('123.mov')
-
+cam1 = cv2.VideoCapture('1234.mov')
+# frame = cv2.imread("ggwp.png")
 lower_bound = np.array([0, 0, 0])
 upper_bound = np.array([230, 225, 215])
 detalization = 10
 approximation_coef = 0.0
-morphology_coef = 15
+morphology_coef = 11
 
 def on_params_change(ind, val):
     global lower_bound, upper_bound, detalization, approximation_coef, morphology_coef
@@ -58,12 +58,31 @@ while(True):
     p1 = map_builder.getPoint([150, 150], 0)
     p2 = map_builder.getPoint([250, 300], 0)
 
+    print(map_builder.getPointBack(p2))
+
     mp = np.zeros(frame.shape, np.uint8)
 
     try:
-        path, mp = graph.search_path_dijkstra([p1[0], p1[1], 1], [p2[0], p2[1], 1])
+        t1 = time.time()
+        path, mp = graph.search_path_dijkstra([p1[1], p1[0], 1], [p2[1], p2[0], 1])
+        print(time.time() - t1)
+
+        path_on_img = []
+        #print(path)
+        for point in path:
+            imgpoint = map_builder.getPointBack([graph.cell_size*int(point[1]) + graph.cell_size // 2, graph.cell_size*int(point[0]) + graph.cell_size // 2])
+            path_on_img.append(imgpoint)
+
+        #print(path_on_img)
+        print(frame.shape)
+
+        for i in range(1, len(path_on_img)):
+            cv2.line(frame, path_on_img[i - 1], path_on_img[i], (0, 255, 0), 3)
+
     except:
         print("no path")
+
+    #print(path)
 
     map = cv2.cvtColor(map, cv2.COLOR_GRAY2RGB)
 

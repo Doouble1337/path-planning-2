@@ -2,61 +2,87 @@ import numpy as np
 import cv2
 from ObjectDetector import ObjectDetector
 from MapBuilder import MapBuilder
+from GUI import GUI, Param
+from tkinter import *
+import time
+from graphs import Graph
 
-#get_available_cameras()
-
-def on_change():
-    pass
-
-cam1 = cv2.VideoCapture(0)
-
-cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
-cv2.namedWindow("sliders_frame", cv2.WINDOW_NORMAL)
+cam1 = cv2.VideoCapture('123.mov')
 
 lower_bound = np.array([0, 0, 0])
-upper_bound = np.array([0, 0, 0])
+upper_bound = np.array([230, 225, 215])
+detalization = 10
+approximation_coef = 0.0
+morphology_coef = 15
 
-cv2.createTrackbar('lower_red', 'sliders_frame', 0, 255, on_change)
-cv2.createTrackbar('lower_green', 'sliders_frame', 0, 255, on_change)
-cv2.createTrackbar('lower_blue', 'sliders_frame', 0, 255, on_change)
+def on_params_change(ind, val):
+    global lower_bound, upper_bound, detalization, approximation_coef, morphology_coef
+    if(ind <= Param.LOWER_BLUE):
+        lower_bound[ind] = int(255 * val)
+    elif(ind <= Param.UPPER_BLUE):
+        upper_bound[ind - Param.UPPER_RED] = int(255 * val)
+    elif(ind == Param.DETALIZATION):
+        detalization = int(20 * val) + 10
+    elif(ind == Param.APPROXIMATION_COEF):
+        approximation_coef = 0.1 * val
+    elif(ind == Param.MORPHOLOGY_COEF):
+        morphology_coef = int(30 * val)
 
-cv2.createTrackbar('upper_red', 'sliders_frame', 255, 255, on_change)
-cv2.createTrackbar('upper_green', 'sliders_frame', 255, 255, on_change)
-cv2.createTrackbar('upper_blue', 'sliders_frame', 255, 255, on_change)
 
 
 
-while (True):
+gui = GUI(on_params_change)
+
+graph = Graph()
+
+map_builder = MapBuilder()
+
+while(True):
     _, frame = cam1.read()
-    #frame = cv2.imread('test.png')
-    #frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
+    frame = frame[:420, :, :]
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-    lower_bound[0] = cv2.getTrackbarPos('lower_red', 'sliders_frame')
-    lower_bound[1] = cv2.getTrackbarPos('lower_green', 'sliders_frame')
-    lower_bound[2] = cv2.getTrackbarPos('lower_blue', 'sliders_frame')
+    contours_frame, surface, objects = ObjectDetector.detect_object(frame, (lower_bound, upper_bound), approximation_coef, morphology_coef)
+    map, scale = map_builder.build_map(frame, objects)
+    if(map is None):
+        gui.set_image(frame)
+        gui.root.update()
+        time.sleep(0.01)
+        continue
 
-    upper_bound[0] = cv2.getTrackbarPos('upper_red', 'sliders_frame')
-    upper_bound[1] = cv2.getTrackbarPos('upper_green', 'sliders_frame')
-    upper_bound[2] = cv2.getTrackbarPos('upper_blue', 'sliders_frame')
+    q = graph.gen_graph(map, detalization)
 
-    surface, contours_frame, objects = ObjectDetector.detect_object(frame, (lower_bound, upper_bound), 0.01)
+    frame = cv2.circle(frame, (150, 150), 5, (255, 0, 0), 2)
+    frame = cv2.circle(frame, (250, 300), 5, (0, 0, 255), 2)
+
+    p1 = map_builder.getPoint([150, 150], 0)
+    p2 = map_builder.getPoint([250, 300], 0)
+
+    mp = np.zeros(frame.shape, np.uint8)
+
+    try:
+        path, mp = graph.search_path_dijkstra([p1[0], p1[1], 1], [p2[0], p2[1], 1])
+    except:
+        print("no path")
+
+    map = cv2.cvtColor(map, cv2.COLOR_GRAY2RGB)
 
 
-    cv2.imshow("surface", surface)
-    cv2.imshow("frame", frame)
-    #cv2.imshow("contours", contours_frame)
-    #for contour in contours_array:
-    #    print(contour, end = ' end')
+    map = cv2.circle(map, (p1[0], p1[1]), 5, (255, 0, 0), 2)
+    map = cv2.circle(map, (p2[0], p2[1]), 5, (0, 0, 255), 2)
 
-    map, scale = MapBuilder.build_map(frame, objects)
-
-    if(map is not None):
-        cv2.imshow("map", map)
+    q = cv2.circle(q, (p1[0], p1[1]), 5, (255, 0, 0), 2)
+    q = cv2.circle(q, (p2[0], p2[1]), 5, (0, 0, 255), 2)
 
 
-    if (cv2.waitKey(1) & 0xFF == ord('q')):
-        break
+    map = np.flip(map + mp, axis = 0)
+    q = np.flip(q + mp, axis = 0)
+    surface = cv2.cvtColor(surface, cv2.COLOR_GRAY2RGB)
+    left = np.concatenate((frame, contours_frame), axis = 1)
+    right = np.concatenate((map, q), axis = 1)
+    res = np.concatenate((left, right), axis = 0)
 
-cam1.release()
+    gui.set_image(res)
+    gui.root.update()
+    time.sleep(0.01)
 
-cv2.destroyAllWindows()

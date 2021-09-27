@@ -11,7 +11,7 @@ cam1 = cv2.VideoCapture('1234.mov')
 # frame = cv2.imread("ggwp.png")
 lower_bound = np.array([0, 0, 0])
 upper_bound = np.array([230, 225, 215])
-detalization = 10
+detalization = 5
 approximation_coef = 0.0
 morphology_coef = 11
 
@@ -37,8 +37,11 @@ graph = Graph()
 
 map_builder = MapBuilder()
 
-while(True):
-    _, frame = cam1.read()
+files = ['frame_11'] #0,2,5,7,
+
+for filename in files:
+    #_, frame = cam1.read()
+    frame = cv2.imread('./' + filename + '.png')
     frame = frame[:420, :, :]
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -52,41 +55,45 @@ while(True):
 
     q = graph.gen_graph(map, detalization)
 
-    frame = cv2.circle(frame, (150, 150), 5, (255, 0, 0), 2)
-    frame = cv2.circle(frame, (250, 300), 5, (0, 0, 255), 2)
+    imgp1 = (350, 120)
+    imgp2 = (240, 350)
 
-    p1 = map_builder.getPoint([150, 150], 0)
-    p2 = map_builder.getPoint([250, 300], 0)
+    p1 = map_builder.getPoint(imgp1, 0)
+    p2 = map_builder.getPoint(imgp2, 0)
 
-    print(map_builder.getPointBack(p2))
+    frame = cv2.circle(frame, imgp1, 5, (255, 0, 0), 2)
+    frame = cv2.circle(frame, imgp2, 5, (0, 0, 255), 2)
+
+    #print(map_builder.getPointBack(p2))
 
     mp = np.zeros(frame.shape, np.uint8)
 
     try:
         t1 = time.time()
         path, mp = graph.search_path_dijkstra([p1[1], p1[0], 1], [p2[1], p2[0], 1])
-        print(time.time() - t1)
+
+       # print(time.time() - t1)
 
         path_on_img = []
-        #print(path)
+        print(path)
+        print("CHLEN")
         for point in path:
-            imgpoint = map_builder.getPointBack([graph.cell_size*int(point[1]) + graph.cell_size // 2, graph.cell_size*int(point[0]) + graph.cell_size // 2])
+            imgpoint = map_builder.getPointBack(point)
             path_on_img.append(imgpoint)
-
-        #print(path_on_img)
-        print(frame.shape)
+        print("HUHUYHUYHUYHUYHUYHUYHUY")
+        print(path_on_img)
+       # print(frame.shape)
 
         for i in range(1, len(path_on_img)):
-            cv2.line(frame, path_on_img[i - 1], path_on_img[i], (0, 255, 0), 3)
+            cv2.line(frame, (path_on_img[i - 1][0], path_on_img[i - 1][1]), (path_on_img[i][0], path_on_img[i][1]), (0, 255, 0), 3)
 
     except:
         print("no path")
 
     #print(path)
-
     map = cv2.cvtColor(map, cv2.COLOR_GRAY2RGB)
 
-
+   # print(p1, p2)
     map = cv2.circle(map, (p1[0], p1[1]), 5, (255, 0, 0), 2)
     map = cv2.circle(map, (p2[0], p2[1]), 5, (0, 0, 255), 2)
 
@@ -94,14 +101,16 @@ while(True):
     q = cv2.circle(q, (p2[0], p2[1]), 5, (0, 0, 255), 2)
 
 
-    map = np.flip(map + mp, axis = 0)
-    q = np.flip(q + mp, axis = 0)
+    map = np.flip(mp, axis = 0)
+    q = np.flip(mp, axis = 0)
     surface = cv2.cvtColor(surface, cv2.COLOR_GRAY2RGB)
     left = np.concatenate((frame, contours_frame), axis = 1)
     right = np.concatenate((map, q), axis = 1)
     res = np.concatenate((left, right), axis = 0)
 
-    gui.set_image(res)
-    gui.root.update()
-    time.sleep(0.01)
+    cv2.imwrite(filename + '-initial_picture.png', frame)
+    cv2.imwrite(filename + '-contours.png', contours_frame)
+    cv2.imwrite(filename + '-pic2r.png', q)
+    cv2.imwrite(filename + '-map.png', map)
+
 

@@ -72,7 +72,7 @@ class Graph:
                     res[i][j] = (255, 255, 255)
         return res
         '''
-
+        print("dfsfff", np.sum(table))
         # связываем и называем вершины
         move_weight = cell_sz / speed
         alpha = pi / 2
@@ -89,7 +89,7 @@ class Graph:
         nodes = []
         graph = dijkstra.Graph()
         # массив направлений; в конец массива записываем первое направление, для удобства обращения
-        directions = [[1, -1, 0], [2, 0, 1], [3, 1, 0], [4, 0, -1], [1, -1, 0]]
+        directions = [[1, -1, 0], [2, -1, 1], [3, 0, 1], [4, 1, 1], [5, 1, 0], [6, 1, -1], [7, 0, -1], [8, -1, -1], [1, -1, 0]]
         for i in range(height):
             for j in range(width):
                 for k in range(len(directions) - 1):
@@ -112,13 +112,14 @@ class Graph:
             if check(y, x, directions[k][1], directions[k][2]):
                 graph.add_edge(str(y) + "-" + str(x) + "-" + str(first),
                                str(y + directions[k][1]) + "-" + str(x + directions[k][2]) + "-" + str(first),
-                               weights[1])
+                               weights[0])
 
         for i in range(height):
             for j in range(width):
                 for k in range(len(directions) - 1):
                     if table[i][j] == 0:
                         edge(i, j, k)
+
         self.graph, self.nodes =  graph, nodes
 
         res = np.zeros((mask.shape[0], mask.shape[1], 3), np.uint8)
@@ -138,11 +139,12 @@ class Graph:
         finish_vertex = str(finish[0] // cell_sz) + "-" + str(finish[1] // cell_sz) + "-" + str(finish[2])
         graph = dijkstra.DijkstraSPF(graph, start_vertex)
         path = graph.get_path(finish_vertex)
+        print(path)
         for i in range(len(path)):
             path[i] = [path[i].split("-")[0], path[i].split("-")[1]]
-
-        map = self.gen_map(path)
-        return path, map
+        map, initial_path = self.gen_map(path)
+        print("YA PIDOR!!!!")
+        return initial_path, map
 
     def astar(self, start, end, allow_diagonal_movement=False):
         maze = self.mask
@@ -186,7 +188,8 @@ class Graph:
                 # if we hit this point return the path such as it is
                 # it will not contain the destination
                 path = return_path(current_node)
-                return path, self.gen_map(path, False)
+                mp, pt = self.gen_map(path, False)
+                return path, mp
 
                 # Get the current node
             current_node = heapq.heappop(open_list)
@@ -195,7 +198,8 @@ class Graph:
             # Found the goal
             if current_node == end_node:
                 path = return_path(current_node)
-                return path, self.gen_map(path, False)
+                mp, pt = self.gen_map(path, False)
+                return path, mp
 
             # Generate children
             children = []
@@ -246,23 +250,28 @@ class Graph:
     def gen_map(self, path, use_detalization = True):
         mask = self.mask
         cell_sz = self.cell_size
+        initial_pth = []
         if(not use_detalization):
             cell_sz = 1
         map = np.zeros([len(mask), len(mask[0]), 3], np.uint8)
         # print(map)
+        last = (0, 0)
         for i in range(1, len(path)):
-            A = [int(path[i - 1][1]) * cell_sz + cell_sz // 2, int(path[i - 1][0]) * cell_sz + cell_sz // 2]
-            B = [int(path[i][1]) * cell_sz + cell_sz // 2, int(path[i][0]) * cell_sz + cell_sz // 2]
+            A = (int(path[i - 1][1]) * cell_sz + cell_sz // 2, int(path[i - 1][0]) * cell_sz + cell_sz // 2)
+            B = (int(path[i][1]) * cell_sz + cell_sz // 2, int(path[i][0]) * cell_sz + cell_sz // 2)
             # print(A, B)
             if A != B:
                 cv2.line(map, A, B, (0, 255, 0), 3)
+                initial_pth.append(A)
+                last = B
+        initial_pth.append(last)
                 #print(A, B)
         for i in range(len(mask)):
             for j in range(len(mask[i])):
                 # print(22111)
                 if (map[i][j] != [0, 255, 0]).any():
-                    if mask[i][j] != 1:
+                    if mask[i][j] == 0:
                         map[i][j] = np.array([0, 0, 0])
                     else:
                         map[i][j] = np.array([255, 255, 255])
-        return map
+        return map, initial_pth

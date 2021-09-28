@@ -11,7 +11,7 @@ cam1 = cv2.VideoCapture('1234.mov')
 # frame = cv2.imread("ggwp.png")
 lower_bound = np.array([0, 0, 0])
 upper_bound = np.array([230, 225, 215])
-detalization = 5
+detalization = 10
 approximation_coef = 0.0
 morphology_coef = 11
 
@@ -37,7 +37,8 @@ graph = Graph()
 
 map_builder = MapBuilder()
 
-files = ['frame_11'] #0,2,5,7,
+files = ['frame_10'] #0,2,5,7,
+filename = 'frame_11'
 
 for filename in files:
     #_, frame = cam1.read()
@@ -55,8 +56,8 @@ for filename in files:
 
     q = graph.gen_graph(map, detalization)
 
-    imgp1 = (350, 120)
-    imgp2 = (240, 350)
+    imgp1 = (30, 190)
+    imgp2 = (550, 200)
 
     p1 = map_builder.getPoint(imgp1, 0)
     p2 = map_builder.getPoint(imgp2, 0)
@@ -76,11 +77,9 @@ for filename in files:
 
         path_on_img = []
         print(path)
-        print("CHLEN")
         for point in path:
             imgpoint = map_builder.getPointBack(point)
             path_on_img.append(imgpoint)
-        print("HUHUYHUYHUYHUYHUYHUYHUY")
         print(path_on_img)
        # print(frame.shape)
 
@@ -108,7 +107,11 @@ for filename in files:
     right = np.concatenate((map, q), axis = 1)
     res = np.concatenate((left, right), axis = 0)
 
+    #cv2.imshow('tk', frame)
+    #print(frame.shape)
+    #time.sleep(0.01)
     cv2.imwrite(filename + '-initial_picture.png', frame)
+    #break
     cv2.imwrite(filename + '-contours.png', contours_frame)
     cv2.imwrite(filename + '-pic2r.png', q)
     cv2.imwrite(filename + '-map.png', map)

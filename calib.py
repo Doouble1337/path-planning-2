@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import glob
+import os
 
 # termination criteria
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -10,6 +11,8 @@ objp[:,:2] = np.mgrid[0:7,0:7].T.reshape(-1,2)
 # Arrays to store object points and image points from all the images
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane
+
+# TODO import images from project directory
 images = glob.glob('C:\chess\*.jpg')
 
 for fname in images:

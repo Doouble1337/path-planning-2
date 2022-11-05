@@ -143,7 +143,6 @@ class Graph:
         for i in range(len(path)):
             path[i] = [path[i].split("-")[0], path[i].split("-")[1]]
         map, initial_path = self.gen_map(path)
-        print("YA PIDOR!!!!")
         return initial_path, map
 
     def astar(self, start, end, allow_diagonal_movement=False):
